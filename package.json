@@ -2,7 +2,7 @@
   "name": "tftstatisticsbot",
   "module": "src/index.ts",
   "type": "module",
-  "scripts":{
+  "scripts": {
     "start": "bun src/index.ts"
   },
   "devDependencies": {
@@ -10,5 +10,14 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "@types/tmi.js": "^1.8.6",
+    "axios": "^1.6.8",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.1",
+    "tmi.js": "^1.8.5"
   }
 }
