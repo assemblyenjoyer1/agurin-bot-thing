@@ -1,16 +1,20 @@
 import * as express from 'express';
 import bodyParser from 'body-parser';
+import type TwitchProvider from './TwitchProvider';
 
 export default class ExpressProvider {
 	private _app: express.Application;
 	private _port: number = 3000;
+	private _twitchProvider?: TwitchProvider;
 
 	constructor() {
 		this._app = express.default();
 	}
 
-	async init() {
+	async init(twitchProvider: TwitchProvider) {
 		console.log("[ExpressProvider] Init..");
+
+		this._twitchProvider = twitchProvider;
 
 		this._app.listen(this._port, () => {
 			console.log(`App listening on port ${this._port}`);
@@ -32,6 +36,13 @@ export default class ExpressProvider {
 
 		this._app.get('/', (req, res) => {
 			res.send("ok");
+		});
+
+		this._app.post('/join', (req, res) => {
+			const { channel } = req.body;
+			console.log(`[ExpressProvider] Joining channel: ${channel}`);
+			this._twitchProvider?.joinChannel(channel);
+			res.send(`Joining channel: ${channel}`);
 		});
 	}
 }

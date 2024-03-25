@@ -13,7 +13,8 @@ export default class App {
 	init() {
 		console.log("[App] Init..");
 
-		this._expressProvider.init();
-		this._twitchProvider.init();
+		this._twitchProvider.init(() => {
+			this._expressProvider.init(this._twitchProvider);
+		});
 	}
 }

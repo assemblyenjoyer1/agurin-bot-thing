@@ -9,8 +9,21 @@ export default class TwitchProvider {
 	constructor() {
 	}
 
-	init() {
+	init(callback: () => void) {
 		console.log("[TwitchProvider] Init..");
+
+		// Check if data folder exists, if not create it
+		if (!fs.existsSync('./data')) {
+			fs.mkdirSync('./data');
+		}
+
+		// Check if the channels.json file exists, if not create it
+		if (!fs.existsSync('./data/channels.json')) {
+			fs.writeFileSync('./data/channels.json', '[]');
+		}
+
+		// Read channels from the channels.json file
+		const channels = JSON.parse(fs.readFileSync('./data/channels.json', 'utf-8'));
 
 		this._client = new Client({
 			options: { debug: true },
@@ -18,14 +31,14 @@ export default class TwitchProvider {
 				username: process.env.TWITCH_BOT_ID,
 				password: process.env.TWITCH_BOT_TOKEN
 			},
-			channels: [
-				process.env.TWITCH_CHANNEL as string
-			]
+			channels: channels
 		});
 
 		this._client.connect();
 		this.registerEvents();
 		this.registerCommands();
+
+		callback();
 	}
 
 	private registerEvents() {
@@ -50,5 +63,14 @@ export default class TwitchProvider {
 			console.log(`[TwitchProvider] Registering command: ${command.name}`);
 			this._commands.set(command.name, command);
 		}
+	}
+
+	public joinChannel(channel: string) {
+		console.log(`[TwitchProvider] Joining channel: ${channel}`);
+		// Write the channel to the channels.json file, write it as an array
+		const channels = JSON.parse(fs.readFileSync('./data/channels.json', 'utf-8'));
+		channels.push(channel);
+		fs.writeFileSync('./data/channels.json', JSON.stringify(channels));
+		this._client?.join(channel);
 	}
 }
