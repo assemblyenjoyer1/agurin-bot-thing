@@ -14,9 +14,6 @@ export default class App {
 		console.log("[App] Init..");
 
 		this._expressProvider.init();
-		this._expressProvider.getAppAccessToken().then(accessToken => {
-			console.log(accessToken);
-			this._twitchProvider.init(accessToken);
-		});
+		this._twitchProvider.init();
 	}
 }

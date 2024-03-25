@@ -9,14 +9,14 @@ export default class TwitchProvider {
 	constructor() {
 	}
 
-	init(accessToken: string) {
+	init() {
 		console.log("[TwitchProvider] Init..");
 
 		this._client = new Client({
 			options: { debug: true },
 			identity: {
 				username: process.env.TWITCH_BOT_ID,
-				password: `oauth:${accessToken}`
+				password: process.env.TWITCH_BOT_TOKEN
 			},
 			channels: [
 				process.env.TWITCH_CHANNEL as string
