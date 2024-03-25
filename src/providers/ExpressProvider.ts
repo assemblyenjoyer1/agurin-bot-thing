@@ -4,7 +4,7 @@ import type TwitchProvider from './TwitchProvider';
 
 export default class ExpressProvider {
 	private _app: express.Application;
-	private _port: number = 3000;
+	private _port: number = 4000;
 	private _twitchProvider?: TwitchProvider;
 
 	constructor() {
