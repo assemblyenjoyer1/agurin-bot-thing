@@ -1,76 +1,85 @@
-import { Client } from 'tmi.js';
-import fs from 'node:fs';
-import type ICommand from '../interfaces/ICommand';
+import { Client } from "tmi.js";
+import fs from "node:fs";
+import type ICommand from "../interfaces/ICommand";
 
 export default class TwitchProvider {
-	private _client?: Client;
-	private _commands = new Map<string, ICommand>();
+  private _client?: Client;
+  private _commands = new Map<string, ICommand>();
 
-	constructor() {
-	}
+  constructor() {}
 
-	init(callback: () => void) {
-		console.log("[TwitchProvider] Init..");
+  init(callback: () => void) {
+    console.log("[TwitchProvider] Init..");
 
-		// Check if data folder exists, if not create it
-		if (!fs.existsSync('./data')) {
-			fs.mkdirSync('./data');
-		}
+    if (!fs.existsSync("./data")) {
+      fs.mkdirSync("./data");
+    }
 
-		// Check if the channels.json file exists, if not create it
-		if (!fs.existsSync('./data/channels.json')) {
-			fs.writeFileSync('./data/channels.json', '[]');
-		}
+    if (!fs.existsSync("./data/channels.json")) {
+      fs.writeFileSync("./data/channels.json", "[]");
+    }
 
-		// Read channels from the channels.json file
-		const channels = JSON.parse(fs.readFileSync('./data/channels.json', 'utf-8'));
+    const channels = JSON.parse(
+      fs.readFileSync("./data/channels.json", "utf-8")
+    );
 
-		this._client = new Client({
-			options: { debug: true },
-			identity: {
-				username: process.env.TWITCH_BOT_ID,
-				password: process.env.TWITCH_BOT_TOKEN
-			},
-			channels: channels
-		});
+    this._client = new Client({
+      options: { debug: true },
+      identity: {
+        username: process.env.TWITCH_BOT_ID,
+        password: process.env.TWITCH_BOT_TOKEN,
+      },
+      channels: channels,
+    });
 
-		this._client.connect();
-		this.registerEvents();
-		this.registerCommands();
+    this._client.connect().catch((error) => {
+      console.error("Connection error:", error);
+    });
 
-		callback();
-	}
+    this.registerEvents();
+    this.registerCommands();
 
-	private registerEvents() {
-		console.log("[TwitchProvider] Registering events..");
+    callback();
+  }
 
-		const eventFiles = fs.readdirSync('./src/events').filter(file => file.endsWith('.ts'));
+  private registerEvents() {
+    console.log("[TwitchProvider] Registering events..");
 
-		for (const file of eventFiles) {
-			const event = require(`../events/${file}`).default;
-			console.log(`[TwitchProvider] Registering event: ${event.name}`);
-			this._client?.on(event.name, (...args: any[]) => event.execute(this._client, this._commands, ...args));
-		}
-	}
+    const eventFiles = fs
+      .readdirSync("./src/events")
+      .filter((file) => file.endsWith(".ts"));
 
-	private registerCommands() {
-		console.log("[TwitchProvider] Registering commands..");
+    for (const file of eventFiles) {
+      const event = require(`../events/${file}`).default;
+      console.log(`[TwitchProvider] Registering event: ${event.name}`);
+      this._client?.on(event.name, (...args: any[]) =>
+        event.execute(this._client, this._commands, ...args)
+      );
+    }
+  }
 
-		const commandFiles = fs.readdirSync('./src/commands').filter(file => file.endsWith('.ts'));
+  private registerCommands() {
+    console.log("[TwitchProvider] Registering commands..");
 
-		for (const file of commandFiles) {
-			const command = require(`../commands/${file}`).default;
-			console.log(`[TwitchProvider] Registering command: ${command.name}`);
-			this._commands.set(command.name, command);
-		}
-	}
+    const commandFiles = fs
+      .readdirSync("./src/commands")
+      .filter((file) => file.endsWith(".ts"));
 
-	public joinChannel(channel: string) {
-		console.log(`[TwitchProvider] Joining channel: ${channel}`);
-		// Write the channel to the channels.json file, write it as an array
-		const channels = JSON.parse(fs.readFileSync('./data/channels.json', 'utf-8'));
-		channels.push(channel);
-		fs.writeFileSync('./data/channels.json', JSON.stringify(channels));
-		this._client?.join(channel);
-	}
+    for (const file of commandFiles) {
+      const command = require(`../commands/${file}`).default;
+      console.log(`[TwitchProvider] Registering command: ${command.name}`);
+      this._commands.set(command.name, command);
+    }
+  }
+
+  public async joinChannel(channel: string) {
+    console.log(`[TwitchProvider] Joining channel: ${channel}`);
+    // Write the channel to the channels.json file, write it as an array
+    const channels = JSON.parse(
+      fs.readFileSync("./data/channels.json", "utf-8")
+    );
+    channels.push(channel);
+    fs.writeFileSync("./data/channels.json", JSON.stringify(channels));
+    this._client?.join(channel);
+  }
 }

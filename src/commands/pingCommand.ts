@@ -7,7 +7,7 @@ const pingCommand: IEvent = {
 
     client.say(channel, "Pong!");
     console.log("Pong!");
-  }
+  },
 };
 
 export default pingCommand;
